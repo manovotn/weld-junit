@@ -18,6 +18,7 @@ package org.jboss.weld.junit5.contexts;
 
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
 
 import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldJunit5Extension;
@@ -38,10 +39,18 @@ public class ContextsActivatedTest {
     public WeldInitiator weld = WeldInitiator.from(Foo.class, Oof.class)
             .activate(RequestScoped.class, SessionScoped.class).build();
 
+    // tests that context activation preceeds test class injection
+    @Inject
+    private Foo injectedFoo;
+
+    @Inject
+    private Oof injectedOof;
+
     @Test
     public void testNormalScopes() {
-        Assertions.assertEquals(weld.select(Foo.class).get().getId(), weld.select(Foo.class).get().getId());
-        Assertions.assertEquals(weld.select(Oof.class).get().getId(), weld.select(Oof.class).get().getId());
+        Assertions.assertNotNull(injectedFoo);
+        Assertions.assertEquals(injectedFoo.getId(), weld.select(Foo.class).get().getId());
+        Assertions.assertEquals(injectedOof.getId(), weld.select(Oof.class).get().getId());
     }
 
 }
